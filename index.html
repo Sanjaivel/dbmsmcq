@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MongoDB NoSQL Mastery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f1923;
+    --card: #1a2634;
+    --card-hover: #22303f;
+    --accent: #00d4aa;
+    --accent2: #00b894;
+    --danger: #ff6b6b;
+    --warn: #ffd93d;
+    --text: #e8f0f7;
+    --muted: #8a9bb0;
+    --border: #2a3a4a;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f1923 0%, #1a2634 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  header h1 {
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .progress-bar {
+    flex: 1;
+    max-width: 300px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 4px;
+  }
+  .stage-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Main container */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+  }
+
+  /* Screens */
+  .screen { display: none; animation: fadeIn 0.4s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Intro screen */
+  .intro {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .intro h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, var(--accent), #7bed9f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .intro p {
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 30px;
+    font-size: 1.1rem;
+  }
+  .intro .stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 40px 0;
+  }
+  .intro .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 30px;
+    min-width: 130px;
+  }
+  .intro .stat .num {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent);
+  }
+  .intro .stat .lbl {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0f1923;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+  }
+  .btn-outline:hover {
+    background: rgba(0, 212, 170, 0.1);
+    box-shadow: none;
+  }
+
+  /* Teaching section */
+  .teach-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .teach-header h2 {
+    font-size: 1.8rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .teach-header .progress-text {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .topic-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+  }
+  .topic-card:hover {
+    border-color: var(--accent);
+  }
+  .topic-card h3 {
+    font-size: 1.25rem;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topic-card h3 .num-badge {
+    background: var(--accent);
+    color: #0f1923;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .topic-card .question-text {
+    color: var(--text);
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .topic-card .answer-box {
+    background: rgba(0, 212, 170, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+  }
+  .topic-card .answer-box .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .topic-card .answer-box .answer {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .topic-card .explanation {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  .topic-card .explanation::before {
+    content: "💡 ";
+  }
+
+  /* Quiz section */
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .quiz-header .q-counter {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .quiz-header .q-counter strong { color: var(--accent); }
+
+  .question-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 30px;
+  }
+  .question-block .qnum {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .question-block .qtext {
+    font-size: 1.15rem;
+    margin-bottom: 22px;
+    font-weight: 500;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .option:hover {
+    border-color: var(--accent);
+    background: var(--card-hover);
+  }
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(0, 212, 170, 0.1);
+  }
+  .option.correct {
+    border-color: var(--accent);
+    background: rgba(0, 212, 170, 0.15);
+  }
+  .option.wrong {
+    border-color: var(--danger);
+    background: rgba(255, 107, 107, 0.15);
+  }
+  .option .letter {
+    background: var(--border);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .option.selected .letter,
+  .option.correct .letter {
+    background: var(--accent);
+    color: #0f1923;
+  }
+  .option.wrong .letter {
+    background: var(--danger);
+    color: #fff;
+  }
+  .option .text {
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  /* Results */
+  .results-hero {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    margin: 0 auto 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 6px solid var(--accent);
+    background: rgba(0, 212, 170, 0.08);
+  }
+  .score-circle.perfect { border-color: #7bed9f; }
+  .score-circle.fail { border-color: var(--danger); }
+  .score-circle .pct {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: var(--accent);
+  }
+  .score-circle.fail .pct { color: var(--danger); }
+  .score-circle.perfect .pct { color: #7bed9f; }
+  .score-circle .frac {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .results-hero h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  .results-hero p {
+    color: var(--muted);
+    margin-bottom: 25px;
+  }
+
+  /* Review list */
+  .review-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--danger);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+  }
+  .review-item.correct-answer {
+    border-left-color: var(--accent);
+  }
+  .review-item .rq {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .review-item .rq .rnum {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  .review-item .row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    align-items: flex-start;
+  }
+  .review-item .row .tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .review-item .row.your .tag {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--danger);
+  }
+  .review-item .row.correct-ans .tag {
+    background: rgba(0, 212, 170, 0.2);
+    color: var(--accent);
+  }
+  .review-item .row .val { color: var(--text); }
+  .review-item .row.your .val { color: #ffb3b3; }
+  .review-item .row.correct-ans .val { color: #a8f0d8; }
+
+  .review-section-title {
+    font-size: 1.3rem;
+    margin: 35px 0 20px;
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .actions-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  /* Confetti / success */
+  .success-banner {
+    background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(123, 237, 159, 0.15));
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .success-banner h2 {
+    font-size: 2rem;
+    color: #7bed9f;
+    margin-bottom: 12px;
+  }
+  .success-banner p {
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 15px; }
+    header h1 { font-size: 1.1rem; }
+    .container { padding: 20px 12px 60px; }
+    .question-block { padding: 20px; }
+    .topic-card { padding: 20px; }
+    .review-item { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ MongoDB NoSQL Mastery</h1>
+  <div class="stage-label" id="stageLabel">Learn</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</header>
+
+<div class="container">
+
+  <!-- ================= INTRO SCREEN ================= -->
+  <section class="screen active" id="screenIntro">
+    <div class="intro">
+      <h2>Master MongoDB & NoSQL</h2>
+      <p>Learn every concept through 143 curated questions, then test yourself. Get any wrong? We'll teach you the correct answer and let you retry until you achieve a perfect score.</p>
+      <div class="stats">
+        <div class="stat"><div class="num">143</div><div class="lbl">Concepts</div></div>
+        <div class="stat"><div class="num">3</div><div class="lbl">Phases</div></div>
+        <div class="stat"><div class="num">∞</div><div class="lbl">Retries</div></div>
+      </div>
+      <button class="btn" onclick="startLearning()">Start Learning →</button>
+    </div>
+  </section>
+
+  <!-- ================= TEACHING SCREEN ================= -->
+  <section class="screen" id="screenTeach">
+    <div class="teach-header">
+      <h2>📖 Phase 1: Learn</h2>
+      <div class="progress-text" id="teachProgress">Question 1 of 143</div>
+    </div>
+    <div id="teachContent"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-outline" id="teachPrev" onclick="teachPrev()">← Previous</button>
+      <button class="btn" id="teachNext" onclick="teachNext()">Next →</button>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ SCREEN ================= -->
+  <section class="screen" id="screenQuiz">
+    <div class="quiz-header">
+      <h2 style="color:var(--accent); font-size:1.5rem;">📝 Phase 2: Quiz</h2>
+      <div class="q-counter">Question <strong id="quizNum">1</strong> of <strong id="quizTotal">143</strong></div>
+    </div>
+    <div id="quizContent"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-outline" id="quizPrev" onclick="quizPrev()">← Previous</button>
+      <button class="btn" id="quizNext" onclick="quizNext()">Next →</button>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS SCREEN ================= -->
+  <section class="screen" id="screenResults">
+    <div id="resultsContent"></div>
+  </section>
+
+</div>
+
+<script>
+// ============================================================
+// DATA — All 143 questions with teaching notes
+// ============================================================
+const QUESTIONS = [
+  {q:"NoSQL is commonly expanded as:", a:"Not Only SQL", opts:["No Structured Query Language","Non-relational Standard Query Language","Network Oriented SQL","Not Only SQL"], exp:"NoSQL stands for 'Not Only SQL' — it doesn't reject SQL but offers alternatives to the relational model."},
+  {q:"Which of the following is NOT a type of NoSQL data store?", a:"Tabular relational store with fixed schema", opts:["Tabular relational store with fixed schema","Key-value store","Document store","Graph database"], exp:"A tabular store with a fixed schema is a traditional RDBMS, not a NoSQL type."},
+  {q:"Redis is an example of which type of NoSQL store?", a:"Key-value store", opts:["Document store","Graph database","Key-value store","Relational database"], exp:"Redis is the most famous in-memory key-value store."},
+  {q:"Apache Cassandra belongs to which category of NoSQL databases?", a:"Wide-column (column-family) store", opts:["Document store","Graph database","Key-value store","Wide-column (column-family) store"], exp:"Cassandra is a wide-column store designed for high write throughput across many nodes."},
+  {q:"Neo4j is a popular example of a:", a:"Graph database", opts:["Graph database","Document database","Wide-column store","Key-value store"], exp:"Neo4j stores nodes and relationships — perfect for connected data like social graphs."},
+  {q:"MongoDB is classified as a:", a:"Document-oriented database", opts:["Graph database","Key-value store","Relational database","Document-oriented database"], exp:"MongoDB stores BSON documents in collections — a document-oriented database."},
+  {q:"Compared with SQL databases, NoSQL databases typically offer:", a:"A flexible, dynamic schema", opts:["A flexible, dynamic schema","A rigid, fixed schema","Mandatory multi-table JOINs","Support for vertical scaling only"], exp:"NoSQL's biggest win is schema flexibility — documents in the same collection can have different fields."},
+  {q:"NoSQL databases are generally designed to scale:", a:"Horizontally by adding commodity servers", opts:["Only by upgrading a single server's hardware","Only by adding more tables","Horizontally by adding commodity servers","By eliminating data replication"], exp:"NoSQL embraces horizontal scaling — add more cheap servers rather than buying a bigger one."},
+  {q:"The CAP theorem was proposed by:", a:"Eric Brewer", opts:["E. F. Codd","Michael Stonebraker","Eric Brewer","Jim Gray"], exp:"Eric Brewer proposed the CAP theorem in 2000 (later proven by Gilbert & Lynch)."},
+  {q:"In the CAP theorem, 'C' stands for Consistency, which means:", a:"Every read receives the most recent write or an error", opts:["Every request receives a non-error response","Every read receives the most recent write or an error","The system keeps working despite network failures","Data is compressed before storage"], exp:"Consistency in CAP means every read sees the latest write (or fails)."},
+  {q:"In the CAP theorem, 'A' stands for Availability, which means:", a:"Every request receives a non-error response", opts:["Every request receives a non-error response","Every read returns the most recent write","The system tolerates dropped messages between nodes","Data is always stored in memory"], exp:"Availability means every request gets a (non-error) response — even if it's stale."},
+  {q:"In the CAP theorem, 'P' stands for Partition tolerance, which means:", a:"The system continues to operate despite network partitions between nodes", opts:["The data is divided into equal-sized tables","The system continues to operate despite network partitions between nodes","Each node stores a complete copy of the data","The system never needs replication"], exp:"Partition tolerance means the system keeps working even if the network splits nodes apart."},
+  {q:"According to the CAP theorem, a distributed data store can simultaneously guarantee:", a:"At most two of the three properties", opts:["All three properties at all times","Only one of the three properties","None of the three properties","At most two of the three properties"], exp:"CAP: you can guarantee at most 2 of Consistency, Availability, Partition tolerance."},
+  {q:"Because network partitions cannot be avoided in distributed systems, the practical trade-off is between:", a:"Consistency and Availability", opts:["Consistency and Availability","Consistency and Partition tolerance","Availability and Scalability","Durability and Isolation"], exp:"Since P is mandatory in distributed systems, you actually choose between C and A."},
+  {q:"A system that rejects some requests during a network partition in order to keep data consistent is classified as:", a:"CP", opts:["CP","AP","CA","AC"], exp:"CP systems favour Consistency over Availability during partitions."},
+  {q:"Traditional single-node relational databases are typically described as prioritising:", a:"CA (Consistency and Availability)", opts:["AP (Availability and Partition tolerance)","CP (Consistency and Partition tolerance)","PA (Partition tolerance and Atomicity)","CA (Consistency and Availability)"], exp:"Single-node RDBMSs don't face partitions, so they can offer both Consistency and Availability."},
+  {q:"Apache Cassandra is generally described (by default configuration) as an:", a:"AP system", opts:["CP system","AP system","CA system","CC system"], exp:"Cassandra defaults to AP — it favours availability and eventual consistency."},
+  {q:"MongoDB with a single primary per replica set is generally described as a:", a:"CP system", opts:["AP system","CA system","PP system","CP system"], exp:"MongoDB's single-primary design makes it CP by default — writes go to one primary."},
+  {q:"Which NoSQL type is best suited to model social-network relationships such as friends-of-friends?", a:"Graph database", opts:["Key-value store","Graph database","Wide-column store","Document store"], exp:"Graph databases excel at traversing relationships like friends-of-friends."},
+  {q:"Which of the following is a wide-column NoSQL database?", a:"Apache HBase", opts:["Redis","Neo4j","Apache HBase","MongoDB"], exp:"HBase is a wide-column store built on Hadoop. Redis=key-value, Neo4j=graph, MongoDB=document."},
+  {q:"Which is a common limitation of NoSQL databases compared with RDBMS?", a:"No universal standard query language like SQL", opts:["No universal standard query language like SQL","Inability to store large data volumes","Inability to run on multiple servers","Inability to store JSON-like data"], exp:"NoSQL lacks a universal standard like SQL — each database has its own API."},
+  {q:"In a key-value store, a stored value is retrieved using its:", a:"Unique key", opts:["Foreign key","SQL JOIN condition","Unique key","Table alias"], exp:"Key-value stores are like hash maps: give the key, get the value."},
+  {q:"In NoSQL document data modelling, the schema design is primarily driven by:", a:"The application's query and access patterns", opts:["The application's query and access patterns","Normal forms up to BCNF","Foreign key constraints","The number of tables available"], exp:"NoSQL data modelling starts from how the application will query the data — not from normal forms."},
+  {q:"Denormalization in a NoSQL data model means:", a:"Storing related data together (e.g., embedding) to avoid joins", opts:["Splitting data into many small normalized tables","Removing all indexes from the database","Storing related data together (e.g., embedding) to avoid joins","Encrypting data at rest"], exp:"Denormalization means embedding related data so you can read it in a single document — avoiding joins."},
+  {q:"ACID stands for:", a:"Atomicity, Consistency, Isolation, Durability", opts:["Availability, Consistency, Integrity, Durability","Atomicity, Consistency, Isolation, Durability","Atomicity, Concurrency, Isolation, Distribution","Accuracy, Consistency, Isolation, Dependability"], exp:"ACID = Atomicity, Consistency, Isolation, Durability — the four RDBMS transaction guarantees."},
+  {q:"In the BASE model, 'Soft state' means:", a:"The state of the system may change over time even without new input", opts:["The data is stored only in volatile memory","The state of the system may change over time even without new input","The system state never changes after a write","Transactions are always rolled back"], exp:"BASE's Soft state means the system state can drift (e.g., via background replication) without new writes."},
+  {q:"Eventual consistency means:", a:"All replicas converge to the same value if no new updates are made", opts:["Every read always returns the latest write instantly","All replicas converge to the same value if no new updates are made","Replicas are never synchronized","Updates are applied only once per day"], exp:"Eventual consistency: given no new writes, replicas eventually converge to the same value."},
+  {q:"Which ACID property ensures that a transaction is executed completely or not at all?", a:"Atomicity", opts:["Consistency","Atomicity","Isolation","Durability"], exp:"Atomicity = all-or-nothing."},
+  {q:"Which ACID property guarantees that committed data survives system failures?", a:"Durability", opts:["Atomicity","Durability","Isolation","Consistency"], exp:"Durability means once committed, data survives crashes."},
+  {q:"Which ACID property ensures concurrent transactions do not interfere with each other?", a:"Isolation", opts:["Isolation","Durability","Atomicity","Consistency"], exp:"Isolation prevents concurrent transactions from stepping on each other."},
+  {q:"What is typically the first step when migrating from an RDBMS to a NoSQL database?", a:"Analyse the existing schema and application query patterns", opts:["Delete all foreign keys immediately","Analyse the existing schema and application query patterns","Export only the stored procedures","Install a larger server"], exp:"You must first understand your schema and how the app queries it before redesigning for NoSQL."},
+  {q:"A row of an RDBMS table most closely corresponds to which MongoDB concept?", a:"Document", opts:["Collection","Database","Index","Document"], exp:"An RDBMS row ≈ a MongoDB document."},
+  {q:"An RDBMS table most closely corresponds to which MongoDB concept?", a:"Collection", opts:["Collection","Document","Field","Shard"], exp:"An RDBMS table ≈ a MongoDB collection."},
+  {q:"A one-to-few relationship in an RDBMS is often modelled in MongoDB by:", a:"Embedding the related data as sub-documents or arrays", opts:["Creating a separate join table","Using a stored procedure","Embedding the related data as sub-documents or arrays","Creating a new database per relationship"], exp:"One-to-few is typically modelled by embedding — sub-documents or arrays inside the parent."},
+  {q:"A migration approach where all data is moved at once and the application is switched over in a single cutover is called:", a:"Big-bang migration", opts:["Rolling denormalization","Incremental normalization","Shadow indexing","Big-bang migration"], exp:"Big-bang migration moves everything in one shot with a single cutover."},
+  {q:"In a phased (trickle) migration:", a:"Data is moved in stages while old and new systems run in parallel", opts:["All data is moved in a single step with downtime","Data is moved in stages while old and new systems run in parallel","Only the schema is migrated, never the data","The old system is deleted before migration begins"], exp:"Phased/trickle migration moves data in chunks while both systems run side-by-side."},
+  {q:"Which MongoDB utility can import CSV/JSON data exported from an RDBMS?", a:"mongoimport", opts:["mongodump","mongostat","mongotop","mongoimport"], exp:"mongoimport loads JSON/CSV into MongoDB — ideal for RDBMS exports."},
+  {q:"A key benefit of moving suitable workloads to NoSQL is:", a:"Easier horizontal scaling for large volumes of semi-structured data", opts:["Guaranteed support for complex multi-table JOINs","Elimination of all data redundancy","Mandatory fixed schema enforcement","Easier horizontal scaling for large volumes of semi-structured data"], exp:"NoSQL shines when you need to scale horizontally with large volumes of semi-structured data."},
+  {q:"Which application is still better served by an RDBMS than NoSQL?", a:"Banking systems needing strict multi-row transactional integrity", opts:["Banking systems needing strict multi-row transactional integrity","Storing large volumes of social media posts","Caching user session data","Storing sensor logs with varying fields"], exp:"Banking requires strict ACID transactions across multiple rows — classic RDBMS territory."},
+  {q:"A many-to-many relationship (join table in RDBMS) can be modelled in MongoDB by:", a:"Using arrays of referenced IDs (or embedding)", opts:["Creating a mandatory foreign key constraint","Using arrays of referenced IDs (or embedding)","Using only a single field","Duplicating the entire database"], exp:"Many-to-many in MongoDB: store arrays of referenced _ids (or embed) on both sides."},
+  {q:"Which MongoDB aggregation stage performs a left outer join with another collection?", a:"$lookup", opts:["$match","$group","$lookup","$project"], exp:"$lookup performs a left outer join in the aggregation pipeline."},
+  {q:"MongoDB stores documents on disk in which format?", a:"BSON", opts:["BSON","XML","CSV","YAML"], exp:"MongoDB stores documents in BSON — binary-encoded JSON with extra types."},
+  {q:"BSON stands for:", a:"Binary JSON", opts:["Basic JSON","Binary JSON","Binary Structured Object Notation","Block Serialized Object Name"], exp:"BSON = Binary JSON."},
+  {q:"A MongoDB document is made up of:", a:"Field and value pairs", opts:["Rows and columns","Nodes and edges","Field and value pairs","Tables and views"], exp:"A MongoDB document is essentially a set of field:value pairs (like a JSON object)."},
+  {q:"A group of MongoDB documents is called a:", a:"Collection", opts:["Table","Collection","Tuple","Relation"], exp:"Documents live in collections."},
+  {q:"Which field is automatically added as the primary key of a MongoDB document if not supplied?", a:"_id", opts:["id_key","_id","pk","doc_id"], exp:"Every document gets a unique _id field automatically."},
+  {q:"The default data type of the _id field generated by MongoDB is:", a:"ObjectId", opts:["Integer","ObjectId","String","Timestamp"], exp:"MongoDB's default _id type is ObjectId."},
+  {q:"An ObjectId in MongoDB is how many bytes long?", a:"12 bytes", opts:["12 bytes","4 bytes","8 bytes","32 bytes"], exp:"ObjectId = 12 bytes (4-byte timestamp + 5-byte random + 3-byte counter)."},
+  {q:"The default port on which the mongod server listens is:", a:"27017", opts:["3306","5432","1521","27017"], exp:"MongoDB's default port is 27017. (3306=MySQL, 5432=Postgres, 1521=Oracle.)"},
+  {q:"Which executable starts the MongoDB database server process?", a:"mongod", opts:["mongosh","mongoimport","mongoexport","mongod"], exp:"mongod is the server daemon. mongosh is the shell."},
+  {q:"Which tool is the modern interactive MongoDB shell?", a:"mongosh", opts:["mongosh","mongod","mongos","mongoperf"], exp:"mongosh is the modern MongoDB shell (replacing the legacy mongo shell)."},
+  {q:"Which shell command switches to (or creates) a database named 'college'?", a:"use college", opts:["create college","use college","switch college","db.open('college')"], exp:"The 'use <db>' command switches to (or lazily creates) a database."},
+  {q:"Which command lists all databases on the server?", a:"show dbs", opts:["list databases()","db.list()","show dbs","get dbs"], exp:"'show dbs' lists all databases."},
+  {q:"A new database becomes visible in 'show dbs' only after it:", a:"Contains at least one collection with data", opts:["Contains at least one collection with data","Has been named","Is switched to with the use command","Has an index created on _id"], exp:"MongoDB only persists a database once it contains a collection with data."},
+  {q:"By default, documents within the same MongoDB collection:", a:"Can have different fields and structures", opts:["Must have identical fields","Must have identical data types for all fields","Cannot contain arrays","Can have different fields and structures"], exp:"MongoDB collections are schemaless — documents can have different structures."},
+  {q:"Which command explicitly creates a collection named 'students'?", a:"db.createCollection('students')", opts:["db.newTable('students')","db.make('students')","db.students.build()","db.createCollection('students')"], exp:"db.createCollection('students') explicitly creates the collection."},
+  {q:"Which command displays the collections in the current database?", a:"show collections", opts:["show tables","list collections;","show collections","db.tables()"], exp:"'show collections' lists the collections in the current database."},
+  {q:"Which command deletes the current database?", a:"db.dropDatabase()", opts:["db.removeAll()","db.dropDatabase()","db.deleteDatabase()","drop database;"], exp:"db.dropDatabase() drops the current database."},
+  {q:"MongoDB Compass is:", a:"A graphical user interface for exploring MongoDB data", opts:["A command-line backup tool","A programming language driver","A query router for sharding","A graphical user interface for exploring MongoDB data"], exp:"Compass is MongoDB's official GUI."},
+  {q:"MongoDB Atlas is:", a:"MongoDB's fully managed cloud database service", opts:["A JSON parsing library","A graph visualisation tool","MongoDB's fully managed cloud database service","A replication protocol"], exp:"Atlas is MongoDB's managed cloud offering."},
+  {q:"Which method inserts a single document into a collection?", a:"insertOne()", opts:["insertMany()","insertOne()","addDoc()","putOne()"], exp:"insertOne() inserts one document."},
+  {q:"Which method inserts multiple documents in one call?", a:"insertMany()", opts:["insertOne()","insertMany()","bulkAdd()","pushAll()"], exp:"insertMany() inserts an array of documents in one call."},
+  {q:"Which command returns all documents in the 'students' collection?", a:"db.students.find()", opts:["db.students.get()","db.students.select()","db.students.all()","db.students.find()"], exp:"db.students.find() returns all documents."},
+  {q:"Which method returns only the first matching document?", a:"findOne()", opts:["findFirst()","findOne()","getOne()","selectOne()"], exp:"findOne() returns just the first matching document (or null)."},
+  {q:"Which operator matches values greater than a specified value?", a:"$gt", opts:["$gt","$gte","$lt","$ne"], exp:"$gt = greater than."},
+  {q:"Which operator matches values that are not equal to a specified value?", a:"$ne", opts:["$ne","$eq","$nin","$not-equal"], exp:"$ne = not equal."},
+  {q:"The $in operator matches documents where the field value:", a:"Equals any value in a specified array", opts:["Equals any value in a specified array","Is greater than all array values","Is missing from the document","Is exactly an array of that size"], exp:"$in matches if the field's value is one of the values in the given array."},
+  {q:"Which operator performs a logical OR across multiple conditions?", a:"$or", opts:["$and","$nor-all","$either","$or"], exp:"$or = logical OR across conditions."},
+  {q:"What does db.students.find({}, {name: 1}) return?", a:"Only the name field (and _id) of every document", opts:["Only documents where name equals 1","Only the name field (and _id) of every document","Every field except name","A count of documents having a name"], exp:"Projection {name: 1} returns only name (plus _id by default) for all documents."},
+  {q:"To exclude the _id field in a projection you specify:", a:"_id: 0", opts:["_id: 1","_id: null","_id: false-all","_id: 0"], exp:"Set _id: 0 to exclude it from projection results."},
+  {q:"Which method updates the first document that matches a filter?", a:"updateOne()", opts:["modifyFirst()","changeOne()","updateOne()","setOne()"], exp:"updateOne() updates the first matching document."},
+  {q:"The $set operator is used to:", a:"Set (or add) the value of a field in a document", opts:["Set (or add) the value of a field in a document","Delete a document","Sort query results","Create an index"], exp:"$set sets (or adds) a field's value."},
+  {q:"Which operator increments a numeric field by a given amount?", a:"$inc", opts:["$add","$sum","$plus","$inc"], exp:"$inc increments a numeric field."},
+  {q:"Which method updates all documents matching a filter?", a:"updateMany()", opts:["updateMany()","updateAll()","updateEach()","bulkSet()"], exp:"updateMany() updates all matching documents."},
+  {q:"Which method removes only one document that matches a filter?", a:"deleteOne()", opts:["removeAll()","dropOne()","deleteOne()","clearOne()"], exp:"deleteOne() removes the first matching document."},
+  {q:"What does db.students.deleteMany({}) do?", a:"Deletes all documents but keeps the collection", opts:["Deletes the collection and its indexes","Deletes the database","Deletes all documents but keeps the collection","Returns an error because the filter is empty"], exp:"deleteMany({}) matches everything, so it deletes all documents — the collection itself remains."},
+  {q:"Which cursor method sorts results in descending order of age?", a:"sort({age: -1})", opts:["sort({age: 1})","order({age: 'desc'})","arrange({age: 0})","sort({age: -1})"], exp:"sort({age: -1}) sorts descending by age."},
+  {q:"Which cursor method restricts the number of documents returned?", a:"limit()", opts:["top()","max()","limit()","range()"], exp:"limit(n) restricts results to n documents."},
+  {q:"Which cursor method skips a specified number of documents?", a:"skip()", opts:["skip()","jump()","offset()","omit()"], exp:"skip(n) skips the first n documents — useful for pagination."},
+  {q:"Which method returns the number of documents matching a filter?", a:"countDocuments()", opts:["size()","length()","total()","countDocuments()"], exp:"countDocuments() returns the count of matching documents."},
+  {q:"With the option {upsert: true} in an update operation:", a:"A new document is inserted if no document matches the filter", opts:["Duplicate documents are removed","A new document is inserted if no document matches the filter","The update is applied to all collections","The operation runs in the background only"], exp:"upsert: true means 'update or insert' — if no match, insert a new document."},
+  {q:"Which update operator appends a value to an array field?", a:"$push", opts:["$pull","$pop-all","$append","$push"], exp:"$push appends to an array. ($pull removes, $pop removes from ends.)"},
+  {q:"Sharding in MongoDB refers to:", a:"Distributing data across multiple machines", opts:["Copying the same data to every server","Compressing old data","Distributing data across multiple machines","Encrypting collections"], exp:"Sharding partitions data across machines for horizontal scaling."},
+  {q:"Sharding is a form of:", a:"Horizontal scaling", opts:["Vertical scaling","Data normalization","Horizontal scaling","Query optimisation only"], exp:"Sharding is horizontal scaling — add more machines."},
+  {q:"Vertical scaling means:", a:"Adding more CPU/RAM/storage to a single server", opts:["Adding more CPU/RAM/storage to a single server","Adding more servers to the cluster","Splitting data across shards","Replicating data to secondaries"], exp:"Vertical scaling = scale up a single machine."},
+  {q:"A shard key is:", a:"A field (or fields) that determines how data is distributed across shards", opts:["A field (or fields) that determines how data is distributed across shards","A password used to access a shard","An index used only for sorting","The name of a replica set"], exp:"The shard key decides how documents are distributed across shards."},
+  {q:"A chunk in a sharded cluster is:", a:"A contiguous range of shard key values stored on a shard", opts:["A backup file of a database","A contiguous range of shard key values stored on a shard","A single document","A configuration server"], exp:"A chunk is a contiguous range of shard-key values — the unit of migration."},
+  {q:"In a sharded cluster, which component routes client queries to the appropriate shards?", a:"mongos", opts:["mongod arbiter","oplog","mongosh","mongos"], exp:"mongos is the query router that sends queries to the right shard(s)."},
+  {q:"Config servers in a sharded cluster store:", a:"Cluster metadata such as chunk-to-shard mappings", opts:["All user data","Only the oplog","Cluster metadata such as chunk-to-shard mappings","Backup snapshots"], exp:"Config servers hold cluster metadata (chunk mappings, shard info)."},
+  {q:"The main components of a sharded cluster are:", a:"Shards, mongos routers and config servers", opts:["Primary, arbiter and hidden nodes","Collections, documents and fields","Shards, mongos routers and config servers","Drivers, shells and compasses"], exp:"A sharded cluster = shards + mongos routers + config servers."},
+  {q:"Which shell helper enables sharding for a database named 'shop'?", a:"sh.enableSharding('shop')", opts:["db.shard('shop')","rs.enableSharding('shop')","sh.startShard('shop')","sh.enableSharding('shop')"], exp:"sh.enableSharding('shop') enables sharding on the database."},
+  {q:"Which command shards the collection 'shop.orders' on customerId?", a:"sh.shardCollection('shop.orders', {customerId: 1})", opts:["db.orders.shard('customerId')","sh.addShard('shop.orders')","sh.shardCollection('shop.orders', {customerId: 1})","rs.shardCollection('orders')"], exp:"sh.shardCollection(namespace, key) shards the collection on the given key."},
+  {q:"Hashed sharding distributes data using:", a:"A hash of the shard key value", opts:["Alphabetical order of collection names","Round-robin by insertion time only","A hash of the shard key value","Document size"], exp:"Hashed sharding hashes the shard key to spread data evenly."},
+  {q:"Ranged sharding divides data based on:", a:"Contiguous ranges of shard key values", opts:["Random document selection","Hash of the _id only","Number of indexes","Contiguous ranges of shard key values"], exp:"Ranged sharding uses contiguous value ranges — good for range queries, bad for monotonic keys."},
+  {q:"The balancer in a sharded cluster:", a:"Migrates chunks between shards to keep data evenly distributed", opts:["Balances read traffic among replica set secondaries","Compresses chunks automatically","Migrates chunks between shards to keep data evenly distributed","Elects a new primary"], exp:"The balancer migrates chunks to keep shards balanced."},
+  {q:"Using a monotonically increasing value (such as a timestamp) as a ranged shard key can cause:", a:"A hotspot where all new inserts go to a single shard", opts:["Perfectly even write distribution","Automatic removal of chunks","Loss of the _id index","A hotspot where all new inserts go to a single shard"], exp:"Monotonic keys cause a hotspot — all new inserts land on the last chunk's shard."},
+  {q:"Which is a characteristic of a good shard key?", a:"High cardinality", opts:["Very few distinct values","Always a boolean field","High cardinality","A constant value"], exp:"High cardinality = many distinct values = better distribution."},
+  {q:"In production, each shard should ideally be deployed as a:", a:"Replica set", opts:["Standalone mongod","Single document","Config server","Replica set"], exp:"Each production shard should be a replica set for fault tolerance."},
+  {q:"When a chunk grows beyond the maximum chunk size, MongoDB:", a:"Splits it into smaller chunks", opts:["Deletes the oldest documents","Stops accepting writes","Converts it into a collection","Splits it into smaller chunks"], exp:"Oversized chunks are split by the mongos/balancer."},
+  {q:"A query that includes the shard key is typically:", a:"Routed only to the relevant shard(s) (targeted query)", opts:["Always broadcast to all shards","Rejected by mongos","Routed only to the relevant shard(s) (targeted query)","Executed on the config servers"], exp:"Queries with the shard key are targeted to only the relevant shard(s)."},
+  {q:"A query that does not include the shard key is generally:", a:"Broadcast to all shards (scatter-gather)", opts:["Sent to a single random shard","Executed only on the primary of the config replica set","Blocked until an index is created","Broadcast to all shards (scatter-gather)"], exp:"No shard key = scatter-gather across all shards — slower."},
+  {q:"Zone sharding allows you to:", a:"Associate ranges of shard key values with specific shards (e.g., by geography)", opts:["Disable chunk splitting","Run mongod without a data directory","Associate ranges of shard key values with specific shards (e.g., by geography)","Create shards without a config server"], exp:"Zone sharding pins ranges of the shard key to specific shards — useful for geo-locality."},
+  {q:"A replica set in MongoDB is:", a:"A group of mongod instances that maintain the same data set", opts:["A collection of shards","A set of indexes on one collection","A group of mongod instances that maintain the same data set","A set of query routers"], exp:"A replica set = multiple mongod instances holding the same data for HA."},
+  {q:"In a replica set, which node receives all write operations?", a:"Primary", opts:["Secondary","Arbiter","Primary","Hidden member"], exp:"Only the primary accepts writes."},
+  {q:"Secondary nodes in a replica set:", a:"Replicate data from the primary's oplog", opts:["Accept all writes from clients by default","Store only the _id fields","Replicate data from the primary's oplog","Act only as query routers"], exp:"Secondaries replicate from the primary's oplog — and can serve reads if configured."},
+  {q:"The oplog (operations log) is:", a:"A capped collection that records data-changing operations used for replication", opts:["A capped collection that records data-changing operations used for replication","A log of failed logins","A backup of the config servers","A GUI log viewer"], exp:"The oplog is a capped collection recording writes — secondaries replay it."},
+  {q:"Failover in a replica set refers to:", a:"Automatic election of a new primary when the current primary becomes unavailable", opts:["Deleting a failed node permanently","Automatic election of a new primary when the current primary becomes unavailable","Manually restarting the cluster","Switching to a different database engine"], exp:"Failover = automatic election of a new primary when the old one dies."},
+  {q:"An arbiter in a replica set:", a:"Participates in elections but does not hold data", opts:["Stores a complete copy of the data","Accepts all writes","Routes queries to shards","Participates in elections but does not hold data"], exp:"An arbiter votes in elections but holds no data."},
+  {q:"The recommended minimum number of voting members for a fault-tolerant replica set is:", a:"3", opts:["1","2","10","3"], exp:"3 voting members is the minimum for fault tolerance (majority = 2)."},
+  {q:"The maximum number of voting members in a MongoDB replica set is:", a:"7", opts:["7","3","12","50"], exp:"MongoDB allows at most 7 voting members."},
+  {q:"A MongoDB replica set can have at most how many members in total?", a:"50", opts:["7","50","12","100"], exp:"A replica set can have up to 50 members total (only 7 vote)."},
+  {q:"Which shell command initiates a new replica set?", a:"rs.initiate()", opts:["rs.initiate()","rs.start()","sh.initiate()","db.replicate()"], exp:"rs.initiate() starts a new replica set."},
+  {q:"Which command displays the current state of the replica set?", a:"rs.status()", opts:["rs.show()","rs.status()","db.replStatus()","sh.status()"], exp:"rs.status() shows the replica set's state."},
+  {q:"Which command adds a new member to a replica set?", a:"rs.add('host:port')", opts:["rs.insert('host:port')","sh.addShard('host:port')","db.addMember('host:port')","rs.add('host:port')"], exp:"rs.add('host:port') adds a member to the replica set."},
+  {q:"The default read preference in MongoDB is:", a:"primary", opts:["primary","secondary","nearest","secondaryPreferred"], exp:"By default, reads go to the primary."},
+  {q:"The read preference 'secondaryPreferred' means reads go to:", a:"A secondary if available, otherwise the primary", opts:["Only the primary","Only the arbiter","Any config server","A secondary if available, otherwise the primary"], exp:"secondaryPreferred = prefer secondaries, fall back to primary."},
+  {q:"A write concern of w: 'majority' means the write is acknowledged after:", a:"It has been applied by a majority of voting data-bearing members", opts:["It is written only to the primary's memory","It has been applied by a majority of voting data-bearing members","It is written to all shards","It is flushed to the client's disk"], exp:"w:'majority' waits until a majority of voting members have applied the write."},
+  {q:"The main benefit of replication is:", a:"High availability and data redundancy", opts:["Splitting data across servers to reduce data size per node","Removing the need for backups of any kind","High availability and data redundancy","Automatic query rewriting"], exp:"Replication gives HA and redundancy — if the primary dies, a secondary takes over."},
+  {q:"A hidden member of a replica set:", a:"Holds a copy of data but is invisible to client applications", opts:["Holds a copy of data but is invisible to client applications","Holds no data","Is the only node that accepts writes","Is always the primary"], exp:"Hidden members hold data and vote, but are invisible to clients."},
+  {q:"A delayed member of a replica set is useful because it:", a:"Keeps a time-delayed copy to help recover from human errors", opts:["Keeps a time-delayed copy to help recover from human errors","Increases write speed","Replaces the arbiter","Serves as the config server"], exp:"Delayed members lag behind intentionally — perfect for recovering from accidental deletes."},
+  {q:"In a 3-member replica set, how many members must be available to elect a primary?", a:"2", opts:["1","2","3","0"], exp:"Majority = 2 of 3 must be available to elect a primary."},
+  {q:"Which is the official Python driver for MongoDB?", a:"PyMongo", opts:["MongoPy-SQL","PyMongo","PyMySQL","SQLAlchemy"], exp:"PyMongo is MongoDB's official Python driver."},
+  {q:"Which command installs PyMongo?", a:"pip install pymongo", opts:["pip install pymongo","npm install pymongo","apt mongo-python","pip get mongodb-shell"], exp:"Install via pip: pip install pymongo."},
+  {q:"Which PyMongo statement creates a connection to a local MongoDB server?", a:"client = MongoClient('mongodb://localhost:27017/')", opts:["client = connect('localhost:3306')","client = MongoClient('mongodb://localhost:27017/')","client = MongoDB.open('27017')","client = Mongo.start()"], exp:"MongoClient('mongodb://localhost:27017/') creates the connection."},
+  {q:"In PyMongo, which expression accesses a database named 'mydb' from a client object?", a:"client['mydb']", opts:["client.open('mydb')","client->mydb()","client['mydb']","client.create_table('mydb')"], exp:"Use dict-style: client['mydb'] (or client.mydb)."},
+  {q:"Which PyMongo method inserts a single document into a collection?", a:"insert_one()", opts:["insertOne.add()","put_doc()","add_row()","insert_one()"], exp:"PyMongo uses snake_case: insert_one()."},
+  {q:"In PyMongo, collection.find({}) returns:", a:"A cursor over the matching documents", opts:["A single Python integer","A cursor over the matching documents","A SQL result set","A pandas DataFrame"], exp:"find() returns a cursor you iterate over."},
+  {q:"Which PyMongo call correctly updates a field of one document?", a:"collection.update_one({'name': 'Ravi'}, {'$set': {'age': 25}})", opts:["collection.update({'age': 25})","collection.update_one({'name': 'Ravi'}, {'$set': {'age': 25}})","collection.set_one('name', 'age')","collection.modify('Ravi', 25)"], exp:"update_one(filter, {'$set': {...}}) updates one matching document."},
+  {q:"Which PyMongo method deletes a single matching document?", a:"delete_one()", opts:["delete_one()","remove_all()","drop_row()","erase()"], exp:"delete_one() removes one matching document."},
+  {q:"The official synchronous MongoDB driver artifact for Java is:", a:"mongodb-driver-sync", opts:["mongodb-driver-sync","mongodb-jdbc-bridge","mongo-odbc","java-mongo-sql"], exp:"The official Java synchronous driver is mongodb-driver-sync."},
+  {q:"In the Java driver, which call creates a MongoClient?", a:"MongoClients.create(connectionString)", opts:["MongoClients.create(connectionString)","DriverManager.getConnection(url)","new SQLClient(url)","Mongo.open(url)"], exp:"MongoClients.create(connectionString) creates a client."},
+  {q:"In the Java driver, how do you obtain a MongoDatabase from a MongoClient?", a:"client.getDatabase('mydb')", opts:["client.useDatabase('mydb')","client.getDatabase('mydb')","client.openSchema('mydb')","client.selectDb('mydb')"], exp:"client.getDatabase('mydb') returns the database."},
+  {q:"In the Java driver, which method returns a collection handle?", a:"database.getCollection('students')", opts:["database.getCollection('students')","database.getTable('students')","database.openCollection('students')","database.fetchRows('students')"], exp:"database.getCollection('students') gets the collection."},
+  {q:"Which Java class represents a MongoDB document in the Java driver?", a:"org.bson.Document", opts:["java.sql.ResultSet","org.bson.Document","java.util.Row","org.mongo.Table"], exp:"org.bson.Document represents a MongoDB document."},
+  {q:"Which Java method inserts a document into a MongoCollection?", a:"collection.insertOne(doc)", opts:["collection.insertOne(doc)","collection.executeUpdate(doc)","collection.addRow(doc)","collection.save(doc, SQL)"], exp:"collection.insertOne(doc) inserts one document."},
+  {q:"In the Java driver, which helper builds a filter for field equality?", a:"Filters.eq('name', 'Ravi')", opts:["Filters.same('name')","Query.equals('name')","Where.name('Ravi')","Filters.eq('name', 'Ravi')"], exp:"Filters.eq('name', 'Ravi') builds an equality filter."},
+  {q:"A MongoDB Atlas connection string typically starts with the scheme:", a:"mongodb+srv://", opts:["jdbc:mongodb://","http://mongo.","mongodb+srv://","sql://"], exp:"Atlas connection strings start with mongodb+srv:// (DNS SRV lookup)."},
+  {q:"Which Python web micro-framework is commonly combined with PyMongo to build a sample application?", a:"Flask", opts:["Struts","Flask","Laravel","Rails"], exp:"Flask is the lightweight Python web framework commonly paired with PyMongo."},
+  {q:"Which extension simplifies integrating MongoDB with a Flask application?", a:"Flask-PyMongo", opts:["Flask-JDBC","Flask-Hibernate","Flask-PyMongo","Flask-MySQLdb"], exp:"Flask-PyMongo integrates PyMongo into Flask."},
+  {q:"Which Java framework module provides repository support for MongoDB?", a:"Spring Data MongoDB", opts:["Spring JDBC Template","Hibernate ORM only","Apache Struts Core","Spring Data MongoDB"], exp:"Spring Data MongoDB provides repository abstractions."},
+  {q:"In Spring Data MongoDB, which annotation marks a class as a MongoDB document?", a:"@Document", opts:["@Document","@Table","@Entity-SQL","@Collection-Row"], exp:"@Document marks a Spring class as a MongoDB document."},
+  {q:"Why must a PyMongo ObjectId usually be converted to a string before returning documents as JSON in Flask?", a:"ObjectId is not JSON serializable by default", opts:["JSON does not allow letters","ObjectId is not JSON serializable by default","MongoDB deletes ObjectIds on read","Flask cannot read the _id field"], exp:"ObjectId isn't JSON-serializable — convert to str before jsonify()."},
+  {q:"In a web application, a MongoClient instance should typically be:", a:"Created once and reused (connection pooling)", opts:["Created and closed for every single query","Created inside every HTML template","Created once and reused (connection pooling)","Avoided in favour of raw sockets"], exp:"MongoClient is designed to be reused — it manages connection pooling internally."}
+];
+
+// Letter map
+const LETTERS = ['A','B','C','D'];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  teachIndex: 0,
+  quizIndex: 0,
+  userAnswers: {},          // qIndex -> letter (A/B/C/D)
+  quizSubmitted: false,
+  wrongQuestions: [],       // array of qIndex for retry
+  isRetry: false,
+  round: 1
+};
+
+// ============================================================
+// SCREEN NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress(pct, stage) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  if (stage) document.getElementById('stageLabel').textContent = stage;
+}
+
+// ============================================================
+// PHASE 1: TEACHING
+// ============================================================
+function startLearning() {
+  state.teachIndex = 0;
+  renderTeach();
+  showScreen('screenTeach');
+}
+
+function renderTeach() {
+  const i = state.teachIndex;
+  const q = QUESTIONS[i];
+  const correctLetter = q.a;
+  const correctOptText = q.opts.find(o => o === q.a) || q.a;
+
+  // Determine which option letter is correct
+  let correctIdx = q.opts.indexOf(q.a);
+  // Some answers are given by exact string; fallback
+  let correctLetterLabel = LETTERS[correctIdx] || '?';
+
+  document.getElementById('teachProgress').textContent =
+    `Concept ${i + 1} of ${QUESTIONS.length}`;
+
+  document.getElementById('teachContent').innerHTML = `
+    <div class="topic-card">
+      <h3><span class="num-badge">Q${i+1}</span> ${escapeHtml(q.q)}</h3>
+      <div class="answer-box">
+        <div class="label">✅ Correct Answer — Option ${correctLetterLabel}</div>
+        <div class="answer">${escapeHtml(q.a)}</div>
+      </div>
+      <div class="explanation">${escapeHtml(q.exp)}</div>
+    </div>
+  `;
+
+  document.getElementById('teachPrev').disabled = i === 0;
+  const nextBtn = document.getElementById('teachNext');
+  if (i === QUESTIONS.length - 1) {
+    nextBtn.textContent = 'Start Quiz →';
+    nextBtn.onclick = () => startQuiz(false);
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = teachNext;
+  }
+
+  updateProgress(((i + 1) / QUESTIONS.length) * 100, 'Learn');
+}
+
+function teachNext() {
+  if (state.teachIndex < QUESTIONS.length - 1) {
+    state.teachIndex++;
+    renderTeach();
+  }
+}
+
+function teachPrev() {
+  if (state.teachIndex > 0) {
+    state.teachIndex--;
+    renderTeach();
+  }
+}
+
+// ============================================================
+// PHASE 2: QUIZ
+// ============================================================
+function startQuiz(isRetry) {
+  state.isRetry = isRetry;
+  state.quizIndex = 0;
+  state.userAnswers = {};
+  state.quizSubmitted = false;
+  if (!isRetry) state.round = 1;
+
+  document.getElementById('quizTotal').textContent = QUESTIONS.length;
+  renderQuiz();
+  showScreen('screenQuiz');
+}
+
+function renderQuiz() {
+  const i = state.quizIndex;
+  const q = QUESTIONS[i];
+
+  document.getElementById('quizNum').textContent = i + 1;
+
+  const optionsHtml = q.opts.map((opt, idx) => {
+    const letter = LETTERS[idx];
+    const selected = state.userAnswers[i] === letter ? 'selected' : '';
+    return `
+      <div class="option ${selected}" onclick="selectAnswer(${i}, '${letter}')">
+        <div class="letter">${letter}</div>
+        <div class="text">${escapeHtml(opt)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="question-block">
+      <div class="qnum">Question ${i + 1}</div>
+      <div class="qtext">${escapeHtml(q.q)}</div>
+      ${optionsHtml}
+    </div>
+  `;
+
+  document.getElementById('quizPrev').disabled = i === 0;
+
+  const nextBtn = document.getElementById('quizNext');
+  if (i === QUESTIONS.length - 1) {
+    nextBtn.textContent = 'Submit Quiz ✓';
+    nextBtn.onclick = submitQuiz;
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = quizNext;
+  }
+
+  updateProgress(((i + 1) / QUESTIONS.length) * 100, `Quiz — Round ${state.round}`);
+}
+
+function selectAnswer(qIndex, letter) {
+  state.userAnswers[qIndex] = letter;
+  renderQuiz();
+}
+
+function quizNext() {
+  if (state.quizIndex < QUESTIONS.length - 1) {
+    state.quizIndex++;
+    renderQuiz();
+  }
+}
+
+function quizPrev() {
+  if (state.quizIndex > 0) {
+    state.quizIndex--;
+    renderQuiz();
+  }
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function submitQuiz() {
+  // Grade
+  let correct = 0;
+  const wrong = [];
+
+  QUESTIONS.forEach((q, i) => {
+    const userLetter = state.userAnswers[i];
+    const correctIdx = q.opts.indexOf(q.a);
+    const correctLetter = LETTERS[correctIdx];
+    if (userLetter === correctLetter) {
+      correct++;
+    } else {
+      wrong.push(i);
+    }
+  });
+
+  state.wrongQuestions = wrong;
+  state.quizSubmitted = true;
+
+  renderResults(correct, wrong);
+  showScreen('screenResults');
+}
+
+function renderResults(correct, wrong) {
+  const total = QUESTIONS.length;
+  const pct = Math.round((correct / total) * 100);
+  const allRight = wrong.length === 0;
+
+  let html = '';
+
+  if (allRight) {
+    html += `
+      <div class="success-banner">
+        <h2>🎉 Perfect Score — Quiz Complete!</h2>
+        <p>You answered all ${total} questions correctly. You've mastered MongoDB & NoSQL!</p>
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="results-hero">
+      <div class="score-circle ${allRight ? 'perfect' : 'fail'}">
+        <div class="pct">${pct}%</div>
+        <div class="frac">${correct} / ${total}</div>
+      </div>
+      <h2>${allRight ? 'Outstanding! 🌟' : 'Round ' + state.round + ' Complete'}</h2>
+      <p>${allRight
+        ? 'You got every single answer right. Well done!'
+        : `You got <strong style="color:var(--accent)">${correct}</strong> right and <strong style="color:var(--danger)">${wrong.length}</strong> wrong. Let's review the ones you missed below — then you can retry just those.`}</p>
+    </div>
+  `;
+
+  // Review section
+  if (wrong.length > 0) {
+    html += `<div class="review-section-title">📚 Let's Learn What You Missed</div>`;
+
+    wrong.forEach(qIdx => {
+      const q = QUESTIONS[qIdx];
+      const userLetter = state.userAnswers[qIdx] || '—';
+      const userOptIdx = LETTERS.indexOf(userLetter);
+      const userText = userOptIdx >= 0 ? q.opts[userOptIdx] : '(not answered)';
+
+      const correctIdx = q.opts.indexOf(q.a);
+      const correctLetter = LETTERS[correctIdx];
+
+      html += `
+        <div class="review-item">
+          <div class="rq"><span class="rnum">Q${qIdx + 1}.</span> ${escapeHtml(q.q)}</div>
+          <div class="row your">
+            <span class="tag">Your answer</span>
+            <span class="val">${userLetter !== '—' ? userLetter + '. ' : ''}${escapeHtml(userText)}</span>
+          </div>
+          <div class="row correct-ans">
+            <span class="tag">Correct</span>
+            <span class="val">${correctLetter}. ${escapeHtml(q.a)}</span>
+          </div>
+          <div class="explanation" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); color:var(--muted); font-size:0.92rem;">
+            💡 ${escapeHtml(q.exp)}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="actions-row">
+        <button class="btn" onclick="retryWrong()">Retry Wrong Questions Only (${wrong.length})</button>
+        <button class="btn btn-outline" onclick="retryFull()">Retry Full Quiz</button>
+      </div>
+    `;
+  } else {
+    // All right — offer full retry or done
+    html += `
+      <div class="actions-row">
+        <button class="btn" onclick="retryFull()">Take Full Quiz Again</button>
+        <button class="btn btn-outline" onclick="goHome()">Back to Home</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('resultsContent').innerHTML = html;
+  updateProgress(100, allRight ? 'Complete ✓' : 'Review');
+}
+
+// ============================================================
+// RETRY LOGIC
+// ============================================================
+function retryWrong() {
+  // Build a quiz using ONLY the wrong questions
+  // Temporarily swap QUESTIONS to a subset, remember original
+  const wrongIdxs = state.wrongQuestions.slice();
+  const subset = wrongIdxs.map(i => QUESTIONS[i]);
+
+  // Save original in global for restoration
+  window._originalQuestions = window._originalQuestions || QUESTIONS;
+
+  // Store mapping: subset index -> original question object
+  window._subsetOriginal = subset;
+
+  // We'll temporarily replace QUESTIONS reference used by quiz functions.
+  // Since QUESTIONS is const, we can't reassign — so instead we create a wrapper:
+  QUESTIONS_FOR_QUIZ = subset;
+  window._usingSubset = true;
+
+  state.quizIndex = 0;
+  state.userAnswers = {};
+  state.round++;
+
+  renderQuizSubset();
+  showScreen('screenQuiz');
+}
+
+function retryFull() {
+  window._usingSubset = false;
+  QUESTIONS_FOR_QUIZ = null;
+  state.round++;
+  startQuiz(false);
+}
+
+function goHome() {
+  window._usingSubset = false;
+  QUESTIONS_FOR_QUIZ = null;
+  showScreen('screenIntro');
+}
+
+// A pointer used by renderQuiz to pick source questions
+let QUESTIONS_FOR_QUIZ = null;
+
+function getQuizQuestions() {
+  return window._usingSubset && QUESTIONS_FOR_QUIZ ? QUESTIONS_FOR_QUIZ : QUESTIONS;
+}
+
+// Override renderQuiz to support subsets
+const _origRenderQuiz = renderQuiz;
+renderQuiz = function() {
+  const list = getQuizQuestions();
+  const i = state.quizIndex;
+  const q = list[i];
+
+  document.getElementById('quizNum').textContent = i + 1;
+  document.getElementById('quizTotal').textContent = list.length;
+
+  const optionsHtml = q.opts.map((opt, idx) => {
+    const letter = LETTERS[idx];
+    const selected = state.userAnswers[i] === letter ? 'selected' : '';
+    return `
+      <div class="option ${selected}" onclick="selectAnswer(${i}, '${letter}')">
+        <div class="letter">${letter}</div>
+        <div class="text">${escapeHtml(opt)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="question-block">
+      <div class="qnum">Question ${i + 1}${window._usingSubset ? ' (Retry)' : ''}</div>
+      <div class="qtext">${escapeHtml(q.q)}</div>
+      ${optionsHtml}
+    </div>
+  `;
+
+  document.getElementById('quizPrev').disabled = i === 0;
+
+  const nextBtn = document.getElementById('quizNext');
+  if (i === list.length - 1) {
+    nextBtn.textContent = 'Submit Quiz ✓';
+    nextBtn.onclick = submitQuiz;
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = quizNext;
+  }
+
+  updateProgress(((i + 1) / list.length) * 100, `Quiz — Round ${state.round}`);
+};
+
+function renderQuizSubset() {
+  renderQuiz();
+}
+
+// quizNext/quizPrev need to use subset length
+const _origQuizNext = quizNext;
+quizNext = function() {
+  const list = getQuizQuestions();
+  if (state.quizIndex < list.length - 1) {
+    state.quizIndex++;
+    renderQuiz();
+  }
+};
+
+// submitQuiz needs to grade against the correct source list
+const _origSubmitQuiz = submitQuiz;
+submitQuiz = function() {
+  const list = getQuizQuestions();
+  let correct = 0;
+  const wrong = []; // subset indices
+
+  list.forEach((q, i) => {
+    const userLetter = state.userAnswers[i];
+    const correctIdx = q.opts.indexOf(q.a);
+    const correctLetter = LETTERS[correctIdx];
+    if (userLetter === correctLetter) {
+      correct++;
+    } else {
+      wrong.push(i);
+    }
+  });
+
+  // Map wrong subset indices back to original QUESTIONS indices
+  let originalWrongIdxs = [];
+  if (window._usingSubset && window._subsetOriginal) {
+    originalWrongIdxs = wrong.map(si => QUESTIONS.indexOf(window._subsetOriginal[si]));
+  } else {
+    originalWrongIdxs = wrong;
+  }
+
+  state.wrongQuestions = originalWrongIdxs;
+  state._lastSubset = list;
+  state._lastWrongSubset = wrong;
+  state.quizSubmitted = true;
+
+  renderResultsSubset(correct, wrong, list);
+  showScreen('screenResults');
+};
+
+function renderResultsSubset(correct, wrongSubset, list) {
+  const total = list.length;
+  const pct = Math.round((correct / total) * 100);
+  const allRight = wrongSubset.length === 0;
+  const overallDone = allRight && window._usingSubset;
+
+  let html = '';
+
+  if (overallDone) {
+    // Check if all original questions are now mastered
+    html += `
+      <div class="success-banner">
+        <h2>🎉 Quiz Complete — 100% Correct!</h2>
+        <p>You answered every remaining question correctly. You've now mastered all ${QUESTIONS.length} concepts!</p>
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="results-hero">
+      <div class="score-circle ${allRight ? 'perfect' : 'fail'}">
+        <div class="pct">${pct}%</div>
+        <div class="frac">${correct} / ${total}</div>
+      </div>
+      <h2>${allRight ? 'Perfect Round! 🌟' : 'Round ' + state.round + ' Complete'}</h2>
+      <p>${allRight
+        ? (window._usingSubset ? 'You got all the retry questions right!' : 'You got every answer right!')
+        : `You got <strong style="color:var(--accent)">${correct}</strong> right and <strong style="color:var(--danger)">${wrongSubset.length}</strong> wrong.`}</p>
+    </div>
+  `;
+
+  if (wrongSubset.length > 0) {
+    html += `<div class="review-section-title">📚 Let's Learn What You Missed</div>`;
+
+    wrongSubset.forEach(si => {
+      const q = list[si];
+      const userLetter = state.userAnswers[si] || '—';
+      const userOptIdx = LETTERS.indexOf(userLetter);
+      const userText = userOptIdx >= 0 ? q.opts[userOptIdx] : '(not answered)';
+      const correctIdx = q.opts.indexOf(q.a);
+      const correctLetter = LETTERS[correctIdx];
+
+      // Find original index for numbering
+      const origIdx = QUESTIONS.indexOf(q);
+
+      html += `
+        <div class="review-item">
+          <div class="rq"><span class="rnum">Q${origIdx + 1}.</span> ${escapeHtml(q.q)}</div>
+          <div class="row your">
+            <span class="tag">Your answer</span>
+            <span class="val">${userLetter !== '—' ? userLetter + '. ' : ''}${escapeHtml(userText)}</span>
+          </div>
+          <div class="row correct-ans">
+            <span class="tag">Correct</span>
+            <span class="val">${correctLetter}. ${escapeHtml(q.a)}</span>
+          </div>
+          <div class="explanation" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); color:var(--muted); font-size:0.92rem;">
+            💡 ${escapeHtml(q.exp)}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="actions-row">
+        <button class="btn" onclick="retryWrong()">Retry Wrong Questions Only (${wrongSubset.length})</button>
+        <button class="btn btn-outline" onclick="retryFull()">Retry Full Quiz</button>
+      </div>
+    `;
+  } else if (!overallDone) {
+    html += `
+      <div class="actions-row">
+        <button class="btn" onclick="retryFull()">Take Full Quiz Again</button>
+        <button class="btn btn-outline" onclick="goHome()">Back to Home</button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="actions-row">
+        <button class="btn" onclick="retryFull()">Take Full Quiz Again</button>
+        <button class="btn btn-outline" onclick="goHome()">Back to Home</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('resultsContent').innerHTML = html;
+  updateProgress(100, overallDone ? 'Complete ✓' : 'Review');
+}
+
+// ============================================================
+// UTIL
+// ============================================================
+function escapeHtml(str) {
+  if (str === undefined || str === null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateProgress(0, 'Learn');
+</script>
+
+</body>
+</html>
